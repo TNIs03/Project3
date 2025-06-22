@@ -17,7 +17,6 @@ public class GridManager : MonoBehaviour
     private GameObject[,] tiles;
     private List<int> tileTypeCount;
     private Difficulty difficulty;
-    private GameState gameState;
     private int specialTileCount;
     private int moveLeft;
     private int points;
@@ -25,7 +24,7 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
-        gameState = GameState.PLaying;
+        GameManager.SetGameState(GameState.PLaying);
         tiles = new GameObject[width, height];
         objectQueue = new Queue<GameObject>();
         tileTypeCount = Enumerable.Repeat(0, tileSprites.Length).ToList();
@@ -63,17 +62,17 @@ public class GridManager : MonoBehaviour
                 tiles[x, y] = tile;
             }
         }
-        TextController.Instance.UpdateMove(moveLeft);
-        TextController.Instance.UpdatePoint(points);
+        GameCanvasController.Instance.UpdateMove(moveLeft);
+        GameCanvasController.Instance.UpdatePoint(points);
     }
     public void TrySwapAndAnimate(int x1, int y1, int x2, int y2)
     {
-        if (gameState == GameState.PLaying)
+        if (GameManager.GetGameState() == GameState.PLaying)
             StartCoroutine(SwapTiles(x1, y1, x2, y2));
     }
     IEnumerator SwapTiles(int x1, int y1, int x2, int y2)
     {
-        gameState = GameState.Animating;
+        GameManager.SetGameState(GameState.Animating);
         var tileA = tiles[x1, y1];
         var tileB = tiles[x2, y2];
 
@@ -92,11 +91,11 @@ public class GridManager : MonoBehaviour
             activeSpecialTile(x1, y1);
 
             moveLeft--;
-            TextController.Instance.UpdateMove(moveLeft);
+            GameCanvasController.Instance.UpdateMove(moveLeft);
 
             yield return new WaitForSeconds(GameConstants.AnimationTime.Explode);
             yield return StartCoroutine(DropTiles());
-            gameState = GameState.PLaying;
+            GameManager.SetGameState(GameState.PLaying);
             yield break;
         }
 
@@ -110,7 +109,7 @@ public class GridManager : MonoBehaviour
             ClearMatches(matchesB, x1, y1);
 
             moveLeft--;
-            TextController.Instance.UpdateMove(moveLeft);
+            GameCanvasController.Instance.UpdateMove(moveLeft);
 
             yield return new WaitForSeconds(GameConstants.AnimationTime.Explode);
             yield return StartCoroutine(DropTiles());
@@ -127,7 +126,7 @@ public class GridManager : MonoBehaviour
             StartCoroutine(Animation.SwapLerp(tileA, new Vector2(x1, y1)));
             yield return StartCoroutine(Animation.SwapLerp(tileB, new Vector2(x2, y2)));
         }
-        gameState = GameState.PLaying;
+        GameManager.SetGameState(GameState.PLaying);
     }
 
     void activeSpecialTile(int x, int y)
@@ -250,7 +249,7 @@ public class GridManager : MonoBehaviour
             }
             
         }
-        TextController.Instance.UpdatePoint(points);
+        GameCanvasController.Instance.UpdatePoint(points);
     }
 
     void ClearDestroyed(List<GameObject> destroyedList)
@@ -276,7 +275,7 @@ public class GridManager : MonoBehaviour
             StartCoroutine(AnimateExplode(new Vector2(x, y)));
             tileScript.setType(TileType.None);
         }
-        TextController.Instance.UpdatePoint(points);
+        GameCanvasController.Instance.UpdatePoint(points);
     }
 
     IEnumerator DropTiles()
@@ -341,11 +340,12 @@ public class GridManager : MonoBehaviour
             Debug.Log("Turn ended.\nSpecial count: " + specialTileCount);
             if (moveLeft == 0)
             {
+                GameManager.SetGameState(GameState.Ended);
                 DialogController.Instance.OnGameOver("OUT OF MOVE\n\nPOINTS: " + points);
             }
-            if (!HasPossibleMove())
+            else if (!HasPossibleMove())
             {
-                //Debug.Log("Game End");
+                GameManager.SetGameState(GameState.Ended);
                 DialogController.Instance.OnGameOver("UNMOVABLE\n\nPOINTS: " + points);
             }
         }
@@ -372,20 +372,6 @@ public class GridManager : MonoBehaviour
             }
         }
         return haveMatches;
-
-        //if (haveMatches)
-        //{
-        //    yield return new WaitForSeconds(GameConstants.AnimationTime.Explode);
-        //    StartCoroutine(DropTiles());
-        //}
-        //else
-        //{
-        //    Debug.Log("Turn ended.\nSpecial count: " + specialTileCount);
-        //    if (!HasPossibleMove())
-        //    {
-        //        Debug.Log("Game End");
-        //    }
-        //}
     }
 
     public bool IsInsideGrid(int x, int y)

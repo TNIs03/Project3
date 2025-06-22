@@ -20,6 +20,7 @@ public enum Difficulty
 
 public enum GameState
 {
+    MainMenu,
     PLaying,
     Pausing,
     Animating,
@@ -38,4 +39,6 @@ public static class GameConstants
     }
     public const int PointMultiplier = 100;
     public const int MoveCount = 10;
+
+    public const float DragThreshold = 0.5f;
 }

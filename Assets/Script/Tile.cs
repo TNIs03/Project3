@@ -24,8 +24,9 @@ public class Tile : MonoBehaviour
         Vector3 currentMouse = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         currentMouse.z = 0f;
         Vector3 dragVector = currentMouse - mouseStart;
+        float dragThreshold = GameConstants.DragThreshold;
         
-        if (Mathf.Abs(dragVector.x) > 0.5f || Mathf.Abs(dragVector.y) > 0.5f) // drag threshold
+        if (Mathf.Abs(dragVector.x) > dragThreshold || Mathf.Abs(dragVector.y) > dragThreshold)
         {
             int dx = 0, dy = 0;
 

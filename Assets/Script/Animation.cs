@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public static class Animation
+public static class Animation 
 {
     public static IEnumerator SwapLerp(GameObject tile, Vector2 targetPos)
     {
